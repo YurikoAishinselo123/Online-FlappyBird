@@ -862,11 +862,11 @@ PlayerSettings:
   captureStartupLogs: {}
   activeInputHandler: 2
   windowsGamepadBackendHint: 0
-  cloudProjectId: 252c00ac-20ab-4301-8966-0793b7bb0331
+  cloudProjectId: 678aa0be-37e1-4ef0-8a9d-6db0a4759f8e
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: Online Flappy Bird
-  organizationId: yurikoaishinselo
+  projectName: Flappy bird
+  organizationId: aishinseloyuriko124
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}
