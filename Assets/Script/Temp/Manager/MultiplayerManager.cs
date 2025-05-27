@@ -1,16 +1,17 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
-using Unity.Netcode;
-using Unity.Netcode.Transports.UTP;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
+public enum LobbyJoinType { None, Host, Client }
 
 public class MultiplayerManager : MonoBehaviour
 {
@@ -20,23 +21,28 @@ public class MultiplayerManager : MonoBehaviour
     private string relayJoinCode;
     private int connectedPlayers = 0;
 
+    public LobbyJoinType JoinType { get; private set; } = LobbyJoinType.None;
+    public bool IsHost => JoinType == LobbyJoinType.Host;
+
     private void Awake()
     {
-        if (Instance == null) Instance = this;
-        else { Destroy(gameObject); return; }
-
-        DontDestroyOnLoad(gameObject);
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
 
         if (NetworkManager.Singleton != null)
         {
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
-
-            // Prevent automatic player spawn
-            NetworkManager.Singleton.NetworkConfig.PlayerPrefab = null;
-
-            // Optional: Use Connection Approval
             NetworkManager.Singleton.ConnectionApprovalCallback += ApproveConnection;
+            NetworkManager.Singleton.NetworkConfig.PlayerPrefab = null; // Use manual player spawning
         }
     }
 
@@ -47,8 +53,13 @@ public class MultiplayerManager : MonoBehaviour
         if (!AuthenticationService.Instance.IsSignedIn)
         {
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
-            Debug.Log("Signed in as: " + AuthenticationService.Instance.PlayerId);
+            Debug.Log("✅ Signed in as: " + AuthenticationService.Instance.PlayerId);
         }
+    }
+
+    public void SetJoinType(LobbyJoinType type)
+    {
+        JoinType = type;
     }
 
     public async Task<string> HostGame()
@@ -91,7 +102,7 @@ public class MultiplayerManager : MonoBehaviour
         }
     }
 
-    public async Task JoinGame(string lobbyCode)
+    public async Task<bool> JoinGame(string lobbyCode)
     {
         try
         {
@@ -101,7 +112,7 @@ public class MultiplayerManager : MonoBehaviour
             if (!currentLobby.Data.ContainsKey("relayCode"))
             {
                 Debug.LogError("❌ Relay code not found in lobby data.");
-                return;
+                return false;
             }
 
             relayJoinCode = currentLobby.Data["relayCode"].Value;
@@ -119,10 +130,12 @@ public class MultiplayerManager : MonoBehaviour
             );
 
             NetworkManager.Singleton.StartClient();
+            return true;
         }
         catch (Exception ex)
         {
             Debug.LogError("❌ JoinGame failed: " + ex.Message);
+            return false;
         }
     }
 
@@ -131,10 +144,10 @@ public class MultiplayerManager : MonoBehaviour
         Debug.Log($"✅ Client connected: {clientId}");
         connectedPlayers++;
 
-        if (NetworkManager.Singleton.IsHost && connectedPlayers >= 2)
+        if (IsHost && connectedPlayers >= 2)
         {
-            Debug.Log("✅ Enough players. Loading 'Gameplay' scene...");
-            NetworkManager.Singleton.SceneManager.LoadScene("Gameplay", LoadSceneMode.Single);
+            Debug.Log("🎮 Enough players. Loading 'Gameplay' scene...");
+            NetworkManager.Singleton.SceneManager.LoadScene("Gameplay", UnityEngine.SceneManagement.LoadSceneMode.Single);
         }
     }
 
@@ -147,7 +160,7 @@ public class MultiplayerManager : MonoBehaviour
     private void ApproveConnection(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
     {
         response.Approved = true;
-        response.CreatePlayerObject = false; // We'll spawn manually!
+        response.CreatePlayerObject = false;
     }
 
     private void OnDestroy()
@@ -160,8 +173,6 @@ public class MultiplayerManager : MonoBehaviour
         }
     }
 
-    public string GetCurrentRelayJoinCode()
-    {
-        return relayJoinCode;
-    }
+    public string GetLobbyCode() => currentLobby?.LobbyCode;
+    public string GetRelayJoinCode() => relayJoinCode;
 }
