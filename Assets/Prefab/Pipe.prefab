@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 2929182501418770648}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.5900006, y: -4.65, z: 0.045594662}
+  m_LocalPosition: {x: -0.5900006, y: -4.38, z: 0.045594662}
   m_LocalScale: {x: 1, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -118,7 +118,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -200,7 +200,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.6025054, y: -0.545799}
+  m_Offset: {x: -0.6025054, y: -0.5383822}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -210,7 +210,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.5510744, y: 2.091598}
+  m_Size: {x: 0.5510744, y: 1.5724185}
   m_EdgeRadius: 0
 --- !u!1 &7783000340338882627
 GameObject:
@@ -239,7 +239,7 @@ Transform:
   m_GameObject: {fileID: 7783000340338882627}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.59, y: 3.5, z: 0.045594662}
+  m_LocalPosition: {x: -0.59, y: 3.3, z: 0.045594662}
   m_LocalScale: {x: 1, y: -1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -330,7 +330,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -375,8 +375,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.1, y: 1.5, z: 1.1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.73333335, y: 1, z: 0.73333335}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 7333039550320159319}
   - {fileID: 900243381249919225}

@@ -1,11 +1,15 @@
 using UnityEngine;
 using Unity.Netcode;
 using System.Collections;
+using System.Collections.Generic;
 
 public class PlayerSpawner : NetworkBehaviour
 {
     public GameObject[] playerVariants;
     public Transform[] spawnPoints;
+
+    private int currentSpawnIndex = 0;
+    private Dictionary<ulong, Transform> clientSpawnPoints = new();
 
     public override void OnNetworkSpawn()
     {
@@ -13,33 +17,61 @@ public class PlayerSpawner : NetworkBehaviour
 
         Debug.Log("🔁 PlayerSpawner OnNetworkSpawn called.");
 
-        int i = 0;
         foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
         {
-            Transform spawnPoint = GetAvailableSpawnPoint();
-
-            GameObject prefabToUse = playerVariants[i % playerVariants.Length];
-            GameObject player = Instantiate(prefabToUse, spawnPoint.position, spawnPoint.rotation);
-
-            player.GetComponent<NetworkObject>().SpawnAsPlayerObject(client.ClientId);
-
-            // Immediately freeze and hide player before the countdown
-            var controller = player.GetComponent<BirdController>();
-            controller.PreGameFreezeClientRpc();
-
-            Debug.Log($"✅ Spawned player {client.ClientId} at {spawnPoint.position}");
-            i++;
+            SpawnPlayerForClient(client.ClientId);
         }
 
-        // Start game after countdown
         StartCoroutine(StartCountdownAndBeginGame());
 
         NetworkManager.OnClientConnectedCallback += HandleClientConnected;
     }
 
+    private void HandleClientConnected(ulong clientId)
+    {
+        Debug.Log($"📦 New client connected: {clientId}");
+        SpawnPlayerForClient(clientId);
+    }
+
+    private void SpawnPlayerForClient(ulong clientId)
+    {
+        // Prevent duplicate spawning
+        if (clientSpawnPoints.ContainsKey(clientId))
+            return;
+
+        if (currentSpawnIndex >= spawnPoints.Length)
+        {
+            Debug.LogError("❌ Not enough spawn points for players!");
+            return;
+        }
+
+        Transform spawnPoint = spawnPoints[currentSpawnIndex];
+        clientSpawnPoints[clientId] = spawnPoint;
+        currentSpawnIndex++;
+
+        int prefabIndex = (int)(clientId % (ulong)playerVariants.Length);
+        GameObject prefabToUse = playerVariants[prefabIndex];
+
+        GameObject player = Instantiate(prefabToUse, spawnPoint.position, spawnPoint.rotation);
+        player.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
+
+        // Freeze player before game starts
+        var controller = player.GetComponent<BirdController>();
+        controller.PreGameFreezeClientRpc();
+
+        Debug.Log($"✅ Spawned player {clientId} at {spawnPoint.position}");
+    }
+
     private IEnumerator StartCountdownAndBeginGame()
     {
-        yield return new WaitForSeconds(3f); // Delay to start game
+        float countdownTime = 3f;
+
+        yield return new WaitForSeconds(0.1f);
+
+        // Trigger countdown on all clients
+        StartLocalCountdownClientRpc(countdownTime);
+
+        yield return new WaitForSeconds(countdownTime + 1f); // countdown + "GO!"
 
         foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
         {
@@ -51,29 +83,17 @@ public class PlayerSpawner : NetworkBehaviour
         }
     }
 
-
-    private void HandleClientConnected(ulong clientId)
+    [ClientRpc]
+    private void StartLocalCountdownClientRpc(float time)
     {
-        Debug.Log($"📦 New client connected: {clientId}");
-
-        if (NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject != null)
+        if (TimerUI.Instance != null)
         {
-            Transform spawnPoint = GetAvailableSpawnPoint();
-            NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.transform.SetPositionAndRotation(spawnPoint.position, spawnPoint.rotation);
-            Debug.Log($"✅ Repositioned player {clientId}");
-            return;
+            TimerUI.Instance.StartCountdown(time);
         }
-
-        int index = (int)(clientId % (ulong)playerVariants.Length);
-        Transform spawn = GetAvailableSpawnPoint();
-        GameObject player = Instantiate(playerVariants[index], spawn.position, spawn.rotation);
-        player.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
-    }
-
-    private Transform GetAvailableSpawnPoint()
-    {
-        int index = Random.Range(0, spawnPoints.Length);
-        return spawnPoints[index];
+        else
+        {
+            Debug.LogWarning("⚠️ TimerUI.Instance is null on client.");
+        }
     }
 
     private void OnDestroy()

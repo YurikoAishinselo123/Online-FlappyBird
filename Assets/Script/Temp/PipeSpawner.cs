@@ -6,7 +6,8 @@ public class PipeSpawner : NetworkBehaviour
     public GameObject pipePrefab;  // Make sure this prefab has NetworkObject component and is registered in NetworkManager's NetworkPrefabs
     public Transform spawnPoint;
     public float spawnInterval = 2f;
-    public float heightOffset = 1f;
+    public float minY = -0.25f;
+    public float maxY = 2.6f;
 
     private float timer;
 
@@ -24,7 +25,7 @@ public class PipeSpawner : NetworkBehaviour
 
     private void SpawnPipe()
     {
-        float randomY = spawnPoint.position.y + Random.Range(-heightOffset, heightOffset);
+        float randomY = Random.Range(minY, maxY);
         Vector3 spawnPos = new Vector3(spawnPoint.position.x, randomY, 0);
 
         // Instantiate the pipe prefab on the server

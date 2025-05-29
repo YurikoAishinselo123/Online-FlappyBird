@@ -1,46 +1,42 @@
 using UnityEngine;
-using Unity.Netcode;
 using TMPro;
+using Unity.Netcode;
 
 public class ScoreUI : MonoBehaviour
 {
     public TextMeshProUGUI scoreText;
     private ScoreManager trackedScoreManager;
+    private int lastScore = -1;
 
-    void Start()
+    private void Start()
     {
-        StartCoroutine(WaitForLocalScoreManager());
-    }
-
-    private System.Collections.IEnumerator WaitForLocalScoreManager()
-    {
-        while (trackedScoreManager == null)
+        // If ScoreManager is attached to PlayerObject
+        if (NetworkManager.Singleton.IsConnectedClient)
         {
-            foreach (var netObj in NetworkManager.Singleton.SpawnManager.SpawnedObjectsList)
+            var playerObj = NetworkManager.Singleton.LocalClient?.PlayerObject;
+            if (playerObj != null)
             {
-                ScoreManager scoreMgr = netObj.GetComponent<ScoreManager>();
-                if (scoreMgr != null && scoreMgr.IsOwner)
-                {
-                    trackedScoreManager = scoreMgr;
-                    trackedScoreManager.score.OnValueChanged += UpdateScoreText;
-                    UpdateScoreText(0, trackedScoreManager.score.Value);
-                    yield break;
-                }
+                trackedScoreManager = playerObj.GetComponent<ScoreManager>();
             }
-            yield return null;
+        }
+
+        if (trackedScoreManager == null)
+        {
+            // Fallback: find any ScoreManager
+            trackedScoreManager = FindFirstObjectByType<ScoreManager>();
         }
     }
 
-    private void UpdateScoreText(int previousValue, int newValue)
+    private void Update()
     {
-        scoreText.text = "Score: " + newValue;
-    }
-
-    private void OnDestroy()
-    {
-        if (trackedScoreManager != null)
+        if (trackedScoreManager != null && scoreText != null)
         {
-            trackedScoreManager.score.OnValueChanged -= UpdateScoreText;
+            int currentScore = trackedScoreManager.Score;
+            if (currentScore != lastScore)
+            {
+                scoreText.text = currentScore.ToString();
+                lastScore = currentScore;
+            }
         }
     }
 }

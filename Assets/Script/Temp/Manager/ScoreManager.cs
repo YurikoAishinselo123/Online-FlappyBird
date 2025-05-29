@@ -1,19 +1,13 @@
 using UnityEngine;
-using Unity.Netcode;
 
-public class ScoreManager : NetworkBehaviour
+public class ScoreManager : MonoBehaviour
 {
-    // Sync score across network, owned by the player who owns this ScoreManager
-    public NetworkVariable<int> score = new NetworkVariable<int>(
-        0,
-        NetworkVariableReadPermission.Everyone,
-        NetworkVariableWritePermission.Owner
-    );
+    private int score = 0;
+    public int Score => score;
 
-    // Method to add score, only executable by the owner
-    public void AddScore()
+    public void AddScore(int amount)
     {
-        if (!IsOwner) return;
-        score.Value += 1;
+        score += amount;
+        Debug.Log($"📊 Local score: {score}");
     }
 }
