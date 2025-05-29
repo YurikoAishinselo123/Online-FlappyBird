@@ -15,6 +15,7 @@ public class BirdController : NetworkBehaviour
 
     private bool isDead = false;
     private bool canPlay = false;
+    private Animator animator;
 
     private void Awake()
     {
@@ -22,6 +23,11 @@ public class BirdController : NetworkBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         col = GetComponent<Collider2D>();
         scoreManager = GetComponent<ScoreManager>();
+    }
+
+    void Start()
+    {
+        animator = GetComponent<Animator>();
     }
 
     public override void OnNetworkSpawn()
@@ -60,6 +66,7 @@ public class BirdController : NetworkBehaviour
     {
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
     }
+
     // private void OnCollisionEnter2D(Collision2D collision)
     // {
     //     if (!IsOwner || isDead) return;
