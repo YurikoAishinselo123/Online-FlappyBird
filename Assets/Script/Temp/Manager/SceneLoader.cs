@@ -24,6 +24,7 @@ public class SceneLoader : MonoBehaviour
     }
 
     public void LoadMainMenu() => LoadScene("MainMenu");
+    public void LoadAboutUs() => LoadScene("About us");
     public void LoadLobby() => LoadScene("Lobby");
     public void LoadWaitingRoom() => LoadScene("Waiting Room");
     public void LoadGameplay() => LoadScene("Gameplay");

@@ -67,15 +67,15 @@ public class BirdController : NetworkBehaviour
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
     }
 
-    // private void OnCollisionEnter2D(Collision2D collision)
-    // {
-    //     if (!IsOwner || isDead) return;
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (!IsOwner || isDead) return;
 
-    //     if (collision.gameObject.CompareTag("Pipe") || collision.gameObject.CompareTag("Ground"))
-    //     {
-    //         Die();
-    //     }
-    // }
+        if (collision.gameObject.CompareTag("Obstacles"))
+        {
+            Die();
+        }
+    }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {

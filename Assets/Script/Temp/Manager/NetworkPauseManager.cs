@@ -8,6 +8,7 @@ public class NetworkPauseManager : NetworkBehaviour
     public static NetworkPauseManager Instance { get; private set; }
 
     public NetworkVariable<bool> isPaused = new NetworkVariable<bool>(false);
+    public NetworkVariable<bool> isPauseUIVisible = new NetworkVariable<bool>(false); // NEW: controls PauseUI visibility
 
     private void Awake()
     {
@@ -43,11 +44,15 @@ public class NetworkPauseManager : NetworkBehaviour
         {
             if (isPaused.Value)
             {
+                // Resume: hide PauseUI immediately, keep pause active during countdown
+                isPauseUIVisible.Value = false;
                 StartCoroutine(ResumeAfterCountdown(3f));
             }
             else
             {
+                // Pause: pause game & show PauseUI
                 isPaused.Value = true;
+                isPauseUIVisible.Value = true;
             }
         }
         else
@@ -61,11 +66,13 @@ public class NetworkPauseManager : NetworkBehaviour
     {
         if (isPaused.Value)
         {
+            isPauseUIVisible.Value = false;
             StartCoroutine(ResumeAfterCountdown(3f));
         }
         else
         {
             isPaused.Value = true;
+            isPauseUIVisible.Value = true;
         }
     }
 

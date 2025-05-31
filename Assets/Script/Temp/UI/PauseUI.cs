@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 using Unity.Netcode;
 
 public class PauseUI : MonoBehaviour
@@ -17,15 +16,30 @@ public class PauseUI : MonoBehaviour
         exitButton.onClick.AddListener(OnExitClicked);
 
         pausePanel.SetActive(false);
+        pauseButton.gameObject.SetActive(true);
+    }
 
+    private void OnEnable()
+    {
         if (NetworkPauseManager.Instance != null)
         {
-            pausePanel.SetActive(NetworkPauseManager.Instance.isPaused.Value);
-            NetworkPauseManager.Instance.isPaused.OnValueChanged += (prev, now) =>
-            {
-                pausePanel.SetActive(now);
-            };
+            NetworkPauseManager.Instance.isPauseUIVisible.OnValueChanged += OnPauseUIVisibilityChanged;
+            OnPauseUIVisibilityChanged(false, NetworkPauseManager.Instance.isPauseUIVisible.Value);
         }
+    }
+
+    private void OnDisable()
+    {
+        if (NetworkPauseManager.Instance != null)
+        {
+            NetworkPauseManager.Instance.isPauseUIVisible.OnValueChanged -= OnPauseUIVisibilityChanged;
+        }
+    }
+
+    private void OnPauseUIVisibilityChanged(bool previous, bool current)
+    {
+        pausePanel.SetActive(current);
+        pauseButton.gameObject.SetActive(!current);
     }
 
     private void OnPauseClicked()
@@ -49,16 +63,15 @@ public class PauseUI : MonoBehaviour
             return;
         }
 
+        pausePanel.SetActive(false);
+        pauseButton.gameObject.SetActive(true);
+
         if (NetworkManager.Singleton.IsServer)
         {
-            // Host can directly trigger exit
-            pausePanel.SetActive(false);
             NetworkPauseManager.Instance.ExitGameClientRpc();
         }
         else
         {
-            // Client requests server to trigger exit for all
-            pausePanel.SetActive(false);
             NetworkPauseManager.Instance.ExitGameServerRpc();
         }
     }

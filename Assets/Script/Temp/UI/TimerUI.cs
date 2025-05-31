@@ -17,7 +17,6 @@ public class TimerUI : MonoBehaviour
 
     public void StartCountdown(float countdownTime)
     {
-        Debug.Log("tes");
         timerCanvas.enabled = true;
         StartCoroutine(CountdownCoroutine(countdownTime));
     }
@@ -29,12 +28,12 @@ public class TimerUI : MonoBehaviour
         while (currentTime > 0)
         {
             countdownText.text = Mathf.CeilToInt(currentTime).ToString();
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSecondsRealtime(1f);
             currentTime--;
         }
 
-        countdownText.text = "GO!";
-        yield return new WaitForSeconds(1f);
+        // countdownText.text = "GO!";
+        // yield return new WaitForSecondsRealtime(1f);
 
         timerCanvas.enabled = false;
     }
